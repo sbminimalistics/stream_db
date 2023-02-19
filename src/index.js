@@ -1,7 +1,6 @@
 const EventEmitter = require('events')
 const fs = require("fs");
 const stream = require("stream");
-const fsPromises = require("fs/promises");
 
 const Events = Object.freeze({
     SIZE: "size",
@@ -14,18 +13,17 @@ const Mode = Object.freeze({
     READ: "read",
 });
 
-class FileDB {
+class FileDB extends EventEmitter{
     activePromise = Promise.resolve();
     currentMode = Mode.CLOSED;
     writer;
     reader;
 
     constructor(path) {
+        super();
         console.log("FileDB.constructor");
         this._path = path;
         this._queue = [];
-
-        // this.fd = fsPromises.open(,);
     }
 
     then() {
@@ -39,7 +37,6 @@ class FileDB {
     createRequest(action) {
         const req = new Request();
         this.activePromise = this.activePromise.then(res => {
-            console.log("native then");
             return req.execute(action);
         });
     }
@@ -63,19 +60,10 @@ class FileDB {
             return new Promise((res, rej) => {
                 this.setMode(Mode.READ);
                 this.createReadStream("r", res, rej, cb);
-                /* this.reader.on("data", (data) => {
-                    readChunks.push(data);
-                    console.log("reader > data", data.length);
-                });
-                this.reader.on("close", (evt) => {
-                    res();
-                }); */
-                // this.reader.read();
             });
         }
         const req = this.createRequest(action);
         return this;
-        // return p;
     }
 
     setMode(mode) {
@@ -96,12 +84,12 @@ class FileDB {
             this.writer.on("end", (evt) => {
                 console.log("writer > end");
             });
-            
+
             this.writer.on("close", (evt) => {
                 console.log("writer > close");
                 // res(evt);
             });
-            
+
             this.writer.on("error", err => {
                 console.log("writer > error", err);
                 // rej(err)
@@ -110,48 +98,32 @@ class FileDB {
     }
 
     createReadStream(flags, res, rej, cb) {
-        // if (!(this.reader instanceof stream.Readable) || this.writer.closed) {
-            this.reader = fs.createReadStream(this._path, {
-                flags: flags
-            });
+        this.reader = fs.createReadStream(this._path, {
+            flags: flags
+        });
 
-            const readChunks = [];
+        const readChunks = [];
 
-            /* this.reader.on("readable", (evt) => {
-                console.log("+++++++++++++++++++++++");
-                console.log("reader > readable step0 > bytes left:", reader.readableLength);
-                if (reader.readableLength > 0) {
-                    read();
-                } else if (bytesToRead == 0) {
-                    reader.read();
-                } else {
-                    console.log("data structure misaligned!", "bytesToRead:", bytesToRead, "readableLength:", reader.readableLength);
-                    reader.read();
-                }
-                console.log("reader > readable step1 > bytes left:", reader.readableLength);
-            }); */
-    
-            this.reader.on("data", (data) => {
-                readChunks.push(data);
-                console.log("reader > data", data.length);
-            });
-    
-            this.reader.on("end", (evt) => {
-                console.log("reader > end");
-            });
-    
-            this.reader.on("close", (evt) => {
-                console.log("reader > close", readChunks.length);
-                cb && cb(readChunks);
-                res(readChunks);
-            });
-    
-            this.reader.on("error", err => {
-                console.log("reader > error");
-                console.log(err);
-                rej(err);
-            });
-        // }
+        this.reader.on("data", (data) => {
+            readChunks.push(data);
+            console.log("reader > data", data.length);
+        });
+
+        this.reader.on("end", (evt) => {
+            console.log("reader > end");
+        });
+
+        this.reader.on("close", (evt) => {
+            console.log("reader > close", readChunks.length);
+            cb && cb(readChunks);
+            res(readChunks);
+        });
+
+        this.reader.on("error", err => {
+            console.log("reader > error");
+            console.log(err);
+            rej(err);
+        });
     }
 }
 
