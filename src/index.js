@@ -28,7 +28,6 @@ class FileDB extends EventEmitter {
         this.activePromise = new Promise((res, rej) => {
             fs.stat(path, (err, stats) => {
                 if (err != null) {
-                    console.log("-----", err);
                     if (err.code !== 'ENOENT') {
                         rej(err);
                     }

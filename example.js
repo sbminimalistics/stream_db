@@ -10,7 +10,7 @@ const delimiterLength = delimiter.length;
 
 // synchronously read test data files
 const data0 = fs.readFileSync(path.resolve(__dirname, srcPath, "10KB.data"));
-const data1 = fs.readFileSync(path.resolve(__dirname, srcPath, "1byte.data"));
+const data1 = fs.readFileSync(path.resolve(__dirname, srcPath, "1B.data"));
 
 // define output data file path (will be created if does not exist)
 const fileDBPath = path.resolve(__dirname, outPath, "out.data");
