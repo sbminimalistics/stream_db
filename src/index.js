@@ -2,7 +2,7 @@ const EventEmitter = require('events')
 const fs = require("fs");
 const stream = require("stream");
 
-const Events = Object.freeze({
+const Event = Object.freeze({
     SIZE: "size",
     NEW_RECORD: "new_record",
 });
@@ -13,17 +13,32 @@ const Mode = Object.freeze({
     READ: "read",
 });
 
-class FileDB extends EventEmitter{
+class FileDB extends EventEmitter {
     activePromise = Promise.resolve();
     currentMode = Mode.CLOSED;
     writer;
     reader;
+    size = 0;
 
     constructor(path) {
         super();
-        console.log("FileDB.constructor");
+
         this._path = path;
         this._queue = [];
+        this.activePromise = new Promise((res, rej) => {
+            fs.stat(path, (err, stats) => {
+                if (err != null) {
+                    console.log(err);
+                    if (err.code !== 'ENOENT') {
+                        rej(err);
+                    }
+                } else {
+                    console.log(stats)
+                    this.size = stats.size;
+                    res(stats);
+                }
+            });
+        });
     }
 
     then() {
@@ -47,6 +62,7 @@ class FileDB extends EventEmitter{
                 this.setMode(Mode.APPEND);
                 this.createWriteStream("a");
                 this.writer.write(data, null, (r) => {
+                    this.addSize(data.length);
                     res();
                 });
             });
@@ -125,6 +141,11 @@ class FileDB extends EventEmitter{
             rej(err);
         });
     }
+
+    addSize(amount) {
+        this.size += amount;
+        this.emit(Event.SIZE, this.size);
+    }
 }
 
 class Request {
@@ -152,6 +173,6 @@ class Request {
 
 module.exports = {
     FileDB,
-    Events,
+    Event,
     Mode
 };
