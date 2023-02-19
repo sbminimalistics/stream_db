@@ -8,7 +8,7 @@ const Event = Object.freeze({
 });
 
 const Mode = Object.freeze({
-    CLOSED: "closes",
+    CLOSED: "closed",
     APPEND: "append",
     READ: "read",
 });
@@ -84,12 +84,16 @@ class FileDB extends EventEmitter {
         return this;
     }
 
+    close() {
+        this.setMode(Mode.CLOSED);
+    }
+
     //privates
 
     setMode(mode) {
         if (this.currentMode != mode || mode == Mode.READ) {
             this.currentMode = mode;
-            console.log("change db mode...");
+            console.log("change db mode to:", mode);
             this.writer && this.writer.close();
             this.reader && this.reader.destroy();
         }
@@ -102,17 +106,17 @@ class FileDB extends EventEmitter {
             });
 
             this.writer.on("end", (evt) => {
-                console.log("writer > end");
+                // console.log("writer > end");
             });
 
             this.writer.on("close", (evt) => {
-                console.log("writer > close");
+                // console.log("writer > close");
                 // res(evt);
             });
 
             this.writer.on("error", err => {
-                console.log("writer > error", err);
-                // rej(err)
+                // console.log("writer > error", err);
+                rej(err)
             });
         }
     }
@@ -126,21 +130,20 @@ class FileDB extends EventEmitter {
 
         this.reader.on("data", (data) => {
             readChunks.push(data);
-            console.log("reader > data", data.length);
         });
 
         this.reader.on("end", (evt) => {
-            console.log("reader > end");
+            // console.log("reader > end");
         });
 
         this.reader.on("close", (evt) => {
-            console.log("reader > close", readChunks.length);
+            // console.log("reader > close", readChunks.length);
             cb && cb(readChunks);
             res(readChunks);
         });
 
         this.reader.on("error", err => {
-            console.log("reader > error");
+            // console.log("reader > error");
             console.log(err);
             rej(err);
         });

@@ -9,8 +9,8 @@ const delimiter = Buffer.from([127, 127, 127, 127]);
 const delimiterLength = delimiter.length;
 
 // synchronously read test data files
-const img0 = fs.readFileSync(path.resolve(__dirname, srcPath, "10KB.data"));
-const img2 = fs.readFileSync(path.resolve(__dirname, srcPath, "1byte.data"));
+const data0 = fs.readFileSync(path.resolve(__dirname, srcPath, "10KB.data"));
+const data1 = fs.readFileSync(path.resolve(__dirname, srcPath, "1byte.data"));
 
 // define output data file path (will be created if does not exist)
 const fileDBPath = path.resolve(__dirname, outPath, "out.data");
@@ -22,10 +22,14 @@ fileDB.on(Event.SIZE, (size) => {
 })
 
 // run multiple chainable appends and reads
-fileDB.append(img0).append(img2);
-fileDB.read(res => console.log("read cb from app, res.length:", res.length)).append(img0);
+fileDB.append(data0).append(data1);
+fileDB.read(res => console.log("read cb from app, res.length:", res.length)).append(data0);
 
 // thenable way of .read() usage
 // fileDB.read().then(res => console.log("read.then from app, res.length:", res.length));
 
-fileDB.append(img2);
+fileDB.append(data1);
+fileDB.append(data0).then(res => {
+    fileDB.close();
+    delete fileDB;
+});
