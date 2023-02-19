@@ -2,8 +2,8 @@ const {FileDB} = require("./src/index");
 
 const fs = require("fs");
 const path = require("path");
-const srcPath = "./data/";
-const outPath = "./data/output/";
+const srcPath = "./test_data/";
+const outPath = "./test_data/output/";
 
 const delimiter = Buffer.from([127, 127, 127, 127]);
 const delimiterLength = delimiter.length;
