@@ -88,6 +88,10 @@ class FileDB extends EventEmitter {
         this.setMode(Mode.CLOSED);
     }
 
+    get size() {
+        return this.size;
+    }
+
     //privates
 
     setMode(mode) {
