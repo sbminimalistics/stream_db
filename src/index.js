@@ -41,6 +41,8 @@ class FileDB extends EventEmitter {
         });
     }
 
+    // publics
+
     then() {
         return this.activePromise.then.apply(this.activePromise, arguments);
     }
@@ -81,6 +83,8 @@ class FileDB extends EventEmitter {
         const req = this.createRequest(action);
         return this;
     }
+
+    //privates
 
     setMode(mode) {
         if (this.currentMode != mode || mode == Mode.READ) {
