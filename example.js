@@ -18,7 +18,7 @@ const fileDBPath = path.resolve(__dirname, outPath, "out.data");
 // create file db instance and add event listeners
 const fileDB = new FileDB(fileDBPath);
 fileDB.on(Event.SIZE, (size) => {
-    console.log("db file size changed to", size, "bytes");
+    console.log("current db file size:", size, "bytes");
 })
 
 // run multiple chainable appends and reads

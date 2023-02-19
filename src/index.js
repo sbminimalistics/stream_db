@@ -28,15 +28,15 @@ class FileDB extends EventEmitter {
         this.activePromise = new Promise((res, rej) => {
             fs.stat(path, (err, stats) => {
                 if (err != null) {
-                    console.log(err);
+                    console.log("-----", err);
                     if (err.code !== 'ENOENT') {
                         rej(err);
                     }
                 } else {
-                    console.log(stats)
                     this.size = stats.size;
-                    res(stats);
                 }
+                this.reportSize();
+                res();
             });
         });
     }
@@ -144,6 +144,10 @@ class FileDB extends EventEmitter {
 
     addSize(amount) {
         this.size += amount;
+        this.reportSize();
+    }
+
+    reportSize() {
         this.emit(Event.SIZE, this.size);
     }
 }
