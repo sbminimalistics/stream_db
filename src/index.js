@@ -65,6 +65,9 @@ class FileDB extends EventEmitter {
                 this.createWriteStream("a", res, rej);
                 if (data instanceof stream.Readable) {
                     data.pipe(this.writer, {end: false});
+                    data.on("data", (d) => {
+                        this.addSize(d.length);
+                    });
                     data.on("end", () => {
                         res();
                     });
