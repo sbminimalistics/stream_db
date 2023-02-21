@@ -5,6 +5,7 @@ const stream = require("stream");
 const Event = Object.freeze({
     SIZE: "size",
     NEW_RECORD: "new_record",
+    ERROR: "error"
 });
 
 const Mode = Object.freeze({
@@ -61,11 +62,21 @@ class FileDB extends EventEmitter {
         const action = () => {
             return new Promise((res, rej) => {
                 this.setMode(Mode.APPEND);
-                this.createWriteStream("a");
-                this.writer.write(data, null, (r) => {
-                    this.addSize(data.length);
-                    res();
-                });
+                this.createWriteStream("a", res, rej);
+                if (data instanceof stream.Readable) {
+                    data.pipe(this.writer, {end: false});
+                    data.on("end", () => {
+                        res();
+                    });
+                    data.on("error", (e) => {
+                        rej(e);
+                    });
+                } else {
+                    this.writer.write(data, null, (r) => {
+                        this.addSize(data.length);
+                        res();
+                    });
+                }
             });
         }
         const req = this.createRequest(action);
@@ -102,23 +113,23 @@ class FileDB extends EventEmitter {
         }
     }
 
-    createWriteStream(flags) {
+    createWriteStream(flags, res, rej) {
         if (!(this.writer instanceof stream.Writable) || this.writer.closed) {
             this.writer = fs.createWriteStream(this._path, {
                 flags: flags
             });
 
-            this.writer.on("end", (evt) => {
+            /* this.writer.on("end", (evt) => {
                 // console.log("writer > end");
             });
 
             this.writer.on("close", (evt) => {
                 // console.log("writer > close");
                 // res(evt);
-            });
+            }); */
 
             this.writer.on("error", err => {
-                // console.log("writer > error", err);
+                console.log("writer > error", err);
                 rej(err)
             });
         }
