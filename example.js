@@ -1,6 +1,9 @@
 const {FileDB, Event} = require("./src/index");
 
+
 const fs = require("fs");
+const http = require("http");
+const stream = require("stream");
 const path = require("path");
 const srcPath = "./test_data/";
 const outPath = "./test_data/output/";
@@ -17,13 +20,13 @@ const fileDBPath = path.resolve(__dirname, outPath, "out.data");
 
 // create file db instance and add event listeners
 const fileDB = new FileDB(fileDBPath);
-fileDB.on(Event.SIZE, (size) => {
+/* fileDB.on(Event.SIZE, (size) => {
     console.log("current db file size:", size, "bytes");
-})
+}) */
 
 // run multiple chainable appends and reads
-fileDB.append(data0).append(data1);
-fileDB.read(res => console.log("read cb from app, res.length:", res.length)).append(data0);
+/* fileDB.append(data0).append(data1);
+fileDB.read(res => console.log("read cb from app, res.length:", res.length)).append(data0); */
 
 // thenable way of .read() usage
 // fileDB.read().then(res => console.log("read.then from app, res.length:", res.length));
@@ -33,3 +36,16 @@ fileDB.append(data0).then(res => {
     fileDB.close();
     delete fileDB;
 });
+
+
+/* fileDB.on(Event.SIZE, (size) => {
+    console.log("current db file size:", size, "bytes");
+    if (size > 100000) {
+        console.log("file size reashed 100k bytes");
+        clearInterval(appendIID);
+        fileDB.then(res => {
+            fileDB.close();
+            delete fileDB;
+        });
+    }
+}); */
