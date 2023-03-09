@@ -53,11 +53,13 @@ class FileDB extends EventEmitter {
     // publics
 
     then() {
-        return this.activePromise.then.apply(this.activePromise, arguments);
+        this.activePromise = this.activePromise.then.apply(this.activePromise, arguments);
+        return this;
     }
 
     catch() {
-        return this.activePromise.catch.apply(this.activePromise, arguments)
+        this.activePromise = this.activePromise.catch.apply(this.activePromise, arguments);
+        return this;
     }
 
     createRequest(action) {

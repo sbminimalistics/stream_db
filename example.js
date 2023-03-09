@@ -31,13 +31,18 @@ fileDB.read(res => console.log("read cb from app, res.length:", res.length)).app
 // thenable way of .read() usage
 // fileDB.read().then(res => console.log("read.then from app, res.length:", res.length));
 
-fileDB.append(data1).then(res => {
-    console.log(res);
-});
-fileDB.append(data0).then(res => {
-    console.log(res);
+fileDB
+.append(data1)
+.then(res => {
+    console.log("1st append res:", res);
+})
+.append(data0)
+.then(res => {
+    console.log("2nd append res:", res);
     fileDB.close();
     delete fileDB;
+}).catch(err => {
+    console.log("catch err:", err);
 });
 
 
