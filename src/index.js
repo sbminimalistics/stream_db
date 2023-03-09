@@ -1,6 +1,7 @@
 const EventEmitter = require('events')
 const fs = require("fs");
 const stream = require("stream");
+const path = require("path");
 
 const Event = Object.freeze({
     SIZE: "size",
@@ -21,16 +22,24 @@ class FileDB extends EventEmitter {
     reader;
     size = 0;
 
-    constructor(path) {
+    constructor(dbPath) {
         super();
 
-        this._path = path;
+        this._path = dbPath;
         this._queue = [];
         this.activePromise = new Promise((res, rej) => {
-            fs.stat(path, (err, stats) => {
+            fs.stat(this._path, (err, stats) => {
                 if (err != null) {
                     if (err.code !== 'ENOENT') {
+                        //reject promise if the error is different than non-existant db file
                         rej(err);
+                    } else {
+                        //create directory if it's not present
+                        fs.mkdir(path.resolve(this._path, ".."), { recursive: true }, (mkDirErr) => {
+                            if (mkDirErr) {
+                                rej(mkDirErr);
+                            }
+                        });
                     }
                 } else {
                     this.size = stats.size;
@@ -62,22 +71,25 @@ class FileDB extends EventEmitter {
         const action = () => {
             return new Promise((res, rej) => {
                 this.setMode(Mode.APPEND);
+                const startPosition = this.size;
+                const callRes = () => res({
+                                        start: startPosition,
+                                        end: this.size
+                                    });
                 this.createWriteStream("a", res, rej);
                 if (data instanceof stream.Readable) {
                     data.pipe(this.writer, {end: false});
                     data.on("data", (d) => {
                         this.addSize(d.length);
                     });
-                    data.on("end", () => {
-                        res();
-                    });
+                    data.on("end", callRes);
                     data.on("error", (e) => {
                         rej(e);
                     });
                 } else {
                     this.writer.write(data, null, (r) => {
                         this.addSize(data.length);
-                        res();
+                        callRes();
                     });
                 }
             });
