@@ -36,6 +36,9 @@ fileDB
 .then(res => {
     console.log("1st append res:", res);
 })
+.read((data) => {
+    console.log("read cb data:", data);
+}, {start: 0, end: 3}) // just the first three bytes;
 .append(data0)
 .then(res => {
     console.log("2nd append res:", res);

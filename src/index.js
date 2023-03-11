@@ -100,11 +100,15 @@ class FileDB extends EventEmitter {
         return this;
     }
 
-    read(cb) {
+    read(cb, options) {
+        const grownOptions = {
+            ...options,
+            flags: "r"
+        }
         const action = () => {
             return new Promise((res, rej) => {
                 this.setMode(Mode.READ);
-                this.createReadStream("r", res, rej, cb);
+                this.createReadStream(grownOptions, res, rej, cb);
             });
         }
         const req = this.createRequest(action);
@@ -152,10 +156,8 @@ class FileDB extends EventEmitter {
         }
     }
 
-    createReadStream(flags, res, rej, cb) {
-        this.reader = fs.createReadStream(this._path, {
-            flags: flags
-        });
+    createReadStream(options, res, rej, cb) {
+        this.reader = fs.createReadStream(this._path, options);
 
         const readChunks = [];
 
