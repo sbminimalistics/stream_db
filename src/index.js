@@ -171,8 +171,9 @@ class FileDB extends EventEmitter {
 
         this.reader.on("close", (evt) => {
             // console.log("reader > close", readChunks.length);
-            cb && cb(readChunks);
-            res(readChunks);
+            const joined = Buffer.concat(readChunks);
+            cb && cb(joined);
+            res(joined);
         });
 
         this.reader.on("error", err => {
