@@ -211,7 +211,7 @@ class Request {
     }
 
     execute(action) {
-        action().then(res => this.res(res));
+        action().then(res => this.res(res)).catch(e => this.rej(e));
         return this.promise;
     }
 }
